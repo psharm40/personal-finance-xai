@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>XAI Finance Tracker</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; background-color: #f4f7f6; }
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; }
+        .input-group { margin-bottom: 15px; }
+        input { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background-color: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        button:hover { background-color: #2980b9; }
+        #results { margin-top: 30px; }
+        .card { background: #fff; border-left: 5px solid #3498db; padding: 15px; margin-bottom: 15px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .explanation { font-size: 0.85em; color: #7f8c8d; margin-top: 8px; display: block; background: #f9f9f9; padding: 5px; border-radius: 4px; }
+        .category-tag { font-weight: bold; color: #2ecc71; text-transform: uppercase; font-size: 0.8em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Finance XAI</h1>
+        <div class="input-group">
+            <input type="text" id="desc" placeholder="Merchant (e.g., Starbucks Coffee)">
+        </div>
+        <div class="input-group">
+            <input type="number" id="amt" placeholder="Amount ($)">
+        </div>
+        <button onclick="addTransaction()">Analyze Transaction</button>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        async function addTransaction() {
+            const desc = document.getElementById('desc').value;
+            const amt = document.getElementById('amt').value;
+            if(!desc || !amt) return alert("Please fill both fields");
+
+            const response = await fetch('/transactions/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({description: desc, amount: parseFloat(amt)})
+            });
+            const data = await response.json();
+            
+            const div = document.createElement('div');
+            div.className = 'card';
+            div.innerHTML = `
+                <strong>${data.description}</strong> — $${data.amount} <br>
+                <span class="category-tag">${data.category}</span>
+                <span class="explanation">💡 <b>AI Logic:</b> ${data.explanation}</span>
+            `;
+            document.getElementById('results').prepend(div);
+            document.getElementById('desc').value = '';
+            document.getElementById('amt').value = '';
+        }
+    </script>
+</body>
+</html>
