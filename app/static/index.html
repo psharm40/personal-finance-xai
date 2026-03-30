@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>XAI Finance Tracker</title>
+    <style>
+        body { font-family: sans-serif; margin: 40px; background: #f4f7f6; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .transaction-card { border-bottom: 1px solid #eee; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .ai-badge { background: #e7f3ff; color: #007bff; padding: 4px 10px; border-radius: 12px; font-size: 0.85em; font-weight: bold; }
+        button { background: #28a745; color: white; border: none; padding: 10px; cursor: pointer; border-radius: 5px; }
+        .fix-btn { background: #007bff; padding: 5px 10px; font-size: 0.8em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏦 XAI Finance Tracker</h1>
+        <input type="text" id="desc" placeholder="Merchant Name">
+        <input type="number" id="amt" placeholder="Amount">
+        <button onclick="addTransaction()">Analyze</button>
+        <div id="list"></div>
+    </div>
+    <script>
+        async function renderList() {
+            const res = await fetch('/transactions/');
+            const data = await res.json();
+            const list = document.getElementById('list');
+            list.innerHTML = '<h3>Transactions</h3>';
+            data.forEach(t => {
+                list.innerHTML += `
+                    <div class="transaction-card">
+                        <div>
+                            <strong>${t.description}</strong>: $${t.amount} <span class="ai-badge">${t.category}</span>
+                            <br><small>💡 ${t.explanation}</small>
+                        </div>
+                        <div>
+                            <select id="sel-${t.id}">
+                                <option value="Groceries">Groceries</option>
+                                <option value="Dining">Dining</option>
+                                <option value="Transport">Transport</option>
+                                <option value="Utilities">Utilities</option>
+                            </select>
+                            <button class="fix-btn" onclick="fix(${t.id})">Fix</button>
+                        </div>
+                    </div>`;
+            });
+        }
+        async function addTransaction() {
+            const desc = document.getElementById('desc').value;
+            const amt = document.getElementById('amt').value;
+            await fetch('/transactions/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({description: desc, amount: parseFloat(amt)})
+            });
+            renderList();
+        }
+        async function fix(id) {
+            const cat = document.getElementById(`sel-${id}`).value;
+            await fetch(`/transactions/${id}/correct?new_category=${cat}`, {method: 'POST'});
+            renderList();
+        }
+        renderList();
+    </script>
+</body>
+</html>

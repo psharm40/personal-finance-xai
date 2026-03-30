@@ -13,6 +13,7 @@ from app.ml.train import update_model
 models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
+# Load the AI Brain
 with open('app/ml/model.pkl', 'rb') as f:
     ml_model = pickle.load(f)
 with open('app/ml/vectorizer.pkl', 'rb') as f:
@@ -39,10 +40,12 @@ def correct_transaction(transaction_id: int, new_category: str = Query(...), db:
     update_model(transaction.description, new_category)
     return {"message": "AI learned!"}
 
-# Serve from the correct directory
-static_path = os.path.join(os.path.dirname(__file__), "static")
-app.mount("/static", StaticFiles(directory=static_path), name="static")
+# Use absolute path finding to prevent Render errors
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+static_dir = os.path.join(BASE_DIR, "static")
+
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 @app.get("/") 
 async def read_index():
-    return FileResponse(os.path.join(static_path, 'index.html'))
+    return FileResponse(os.path.join(static_dir, 'index.html'))
