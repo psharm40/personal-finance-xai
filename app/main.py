@@ -54,7 +54,7 @@ def correct_transaction(transaction_id: int, new_category: str, db: Session = De
 	transaction = db.query(models.Transaction).filter(models.Transaction.id == 
 transaction_id).first()
 	if not transaction: 
-		return {"error": Transaction not found"}
+		return {"error": "Transaction not found"}
 
 	transaction.category = new_category 
 	db.commit()
