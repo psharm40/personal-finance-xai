@@ -8,6 +8,7 @@ from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from . import crud, models, schemas
 from .database import engine, get_db
+from app.ml.train import update_model
 
 models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
@@ -48,6 +49,19 @@ def create_transaction(transaction: schemas.TransactionCreate, db: Session = Dep
 def get_analytics(db: Session = Depends(get_db)):
     totals = crud.get_category_totals(db)
     return {category: total for category, total in totals}
+
+def correct_transaction(transaction_id: int, new_category: str, db: Session = Depends(get_db)): 
+	transaction = db.query(models.Transaction).filter(models.Transaction.id == 
+transaction_id).first()
+	if not transaction: 
+		return {"error": Transaction not found"}
+
+	transaction.category = new_category 
+	db.commit()
+
+	update_model(transaction.description, new_category)
+
+	return {"message": f"AI learned that {transaction.description} is {new_category}!"}
 
 if not os.path.exists("static"):
     os.makedirs("static")
