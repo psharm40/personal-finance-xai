@@ -21,6 +21,3 @@ def update_model(new_description, new_category):
     df = pd.concat([df, new_row], ignore_index=True)
     df.to_csv("app/ml/transactions.csv", index=False)
     train_model()
-
-if __name__ == "__main__":
-    train_model()
